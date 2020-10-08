@@ -49,6 +49,7 @@
 #include "lcec_deasda.h"
 #include "lcec_omrg5.h"
 #include "lcec_ph3lm2rm.h"
+#include "lcec_nanopd4e.h"
 
 #include "rtapi_app.h"
 
@@ -230,6 +231,9 @@ static const lcec_typelist_t types[] = {
   { lcecSlaveTypeOmrG5_KN75F,  LCEC_OMRG5_VID, LCEC_OMRG5_R88D_KN75F_ECT_PID,  LCEC_OMRG5_PDOS, lcec_omrg5_init},
   { lcecSlaveTypeOmrG5_KN150F, LCEC_OMRG5_VID, LCEC_OMRG5_R88D_KN150F_ECT_PID, LCEC_OMRG5_PDOS, lcec_omrg5_init},
 
+  // Nanotec PD4E drive
+  { lcecSlaveTypeNanoPD4E, LCEC_NANOPD4E_VID, LCEC_NANOPD4E_PID, LCEC_NANOPD4E_PDOS, lcec_nanopd4e_init},
+  
   // modusoft PH3LM2RM converter
   { lcecSlaveTypePh3LM2RM, LCEC_PH3LM2RM_VID, LCEC_PH3LM2RM_PID, LCEC_PH3LM2RM_PDOS, lcec_ph3lm2rm_init},
 

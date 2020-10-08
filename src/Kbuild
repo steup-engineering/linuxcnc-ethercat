@@ -2,6 +2,7 @@ obj-m += lcec.o
 lcec-objs := \
     lcec_main.o \
     lcec_class_enc.o \
+    lcec_class_rt_sdo.o \
     lcec_generic.o \
     lcec_ax5200.o \
     lcec_el1xxx.o \
@@ -32,5 +33,6 @@ lcec-objs := \
     lcec_stmds5k.o \
     lcec_deasda.o \
     lcec_omrg5.o \
-    lcec_ph3lm2rm.o
+    lcec_ph3lm2rm.o \
+    lcec_nanopd4e.o
 

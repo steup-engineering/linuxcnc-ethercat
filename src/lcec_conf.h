@@ -177,7 +177,8 @@ typedef enum {
   lcecSlaveTypeOmrG5_KN50F,
   lcecSlaveTypeOmrG5_KN75F,
   lcecSlaveTypeOmrG5_KN150F,
-  lcecSlaveTypePh3LM2RM
+  lcecSlaveTypePh3LM2RM,
+  lcecSlaveTypeNanoPD4E
 } LCEC_SLAVE_TYPE_T;
 
 typedef struct {

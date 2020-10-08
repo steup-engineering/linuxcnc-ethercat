@@ -235,6 +235,9 @@ static const LCEC_CONF_TYPELIST_T slaveTypes[] = {
   // modusoft PH3LM2RM converter
   { "Ph3LM2RM", lcecSlaveTypePh3LM2RM, NULL },
 
+  // Nanotec PD4e Drive
+  { "NanoPD4E", lcecSlaveTypeNanoPD4E, NULL },
+
   { NULL }
 };
 
