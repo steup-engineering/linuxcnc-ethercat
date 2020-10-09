@@ -221,7 +221,7 @@ ec_sdo_request_t *create_sdo_request(struct lcec_slave *slave, uint16_t index, u
   ec_sdo_request_t *result;
 
   if ((result =ecrt_slave_config_create_sdo_request(slave->config,index, subindex, size))== NULL) {
-   rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure sdo request slave %s.%s sdo 0x%04 \n", master->name, slave->name, index);
+   rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure sdo request slave %s.%s sdo 0x%04x\n", master->name, slave->name, index);
   }
   return result;
 }

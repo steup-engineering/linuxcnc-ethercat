@@ -49,7 +49,7 @@ int class_rt_sdo_init(struct lcec_slave *slave, lcec_class_rt_sdo_data_t *hal_da
   }
   // create sdo request
   if ((hal_data->sdo_request_data =ecrt_slave_config_create_sdo_request(slave->config,index, subindex, size))== NULL) {
-   rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure sdo request slave %s.%s sdo 0x%04 %s \n", master->name, slave->name,
+   rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure sdo request slave %s.%s sdo 0x%04x %s\n", master->name, slave->name,
      index, name);
    return -1; 
   }
