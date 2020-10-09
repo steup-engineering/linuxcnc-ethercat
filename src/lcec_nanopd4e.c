@@ -111,7 +111,6 @@ typedef struct {
   hal_bit_t enable_old;
   hal_bit_t jog_pos_old;
   hal_bit_t jog_neg_old;
-  hal_bit_t home_old;
   hal_bit_t stat_homed_old;
   hal_bit_t stat_fault_old;
   hal_bit_t setpoint_ack_old;
@@ -423,7 +422,7 @@ void lcec_nanopd4e_read(struct lcec_slave *slave, long period) {
   uint8_t *pd = master->process_data;
   uint16_t status;
   int8_t opmodein;
-  bool setpoint_ack;
+  bool setpoint_ack = 0;
 
   // check for change in scale value
   lcec_nanopd4e_check_scales(hal_data);
@@ -508,9 +507,9 @@ void lcec_nanopd4e_write(struct lcec_slave *slave, long period) {
   lcec_master_t *master = slave->master;
   lcec_nanopd4e_data_t *hal_data = (lcec_nanopd4e_data_t *) slave->hal_data;
   uint8_t *pd = master->process_data;
-  int enable_edge, jog_rising_edge, home_rising_edge;
+  int enable_edge, jog_rising_edge;
   uint16_t control;
-  uint32_t submode;
+  uint32_t submode = 0;
   int8_t opmode;
   float jogvelo;
 
@@ -559,10 +558,6 @@ void lcec_nanopd4e_write(struct lcec_slave *slave, long period) {
   jog_rising_edge = (*(hal_data->jog_pos) && !hal_data->jog_pos_old) || (*(hal_data->jog_neg) && !hal_data->jog_neg_old);
   hal_data->jog_pos_old = *(hal_data->jog_pos);
   hal_data->jog_neg_old = *(hal_data->jog_neg);
-
-  //detect home rising edge
-  home_rising_edge = *(hal_data->home) && !hal_data->home_old; 
-  hal_data->home_old = *(hal_data->home);
 
   //set JOG velocity
   if (*(hal_data->jog_pos)) {
