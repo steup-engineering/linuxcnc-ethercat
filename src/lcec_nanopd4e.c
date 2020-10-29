@@ -60,7 +60,7 @@ typedef struct {
   hal_bit_t *stat_homed;
   hal_bit_t *stat_homing;
   hal_bit_t *stat_home_fault;
-
+  hal_u32_t *stat_error_code;
 
   hal_bit_t *new_setpoint;
   hal_bit_t *new_setpoint_instant;
@@ -80,6 +80,9 @@ typedef struct {
   lcec_class_rt_sdo_data_t pos_accel;
   lcec_class_rt_sdo_data_t pos_deccel;
   lcec_class_rt_sdo_data_t pos_option_code;
+  lcec_class_rt_sdo_data_t pos_foll_err_window;
+  lcec_class_rt_sdo_data_t pos_foll_err_time;
+  lcec_class_rt_sdo_data_t pos_foll_err_reaction;
 
   lcec_class_rt_sdo_data_t velo_accel;
   lcec_class_rt_sdo_data_t velo_deccel;
@@ -303,6 +306,15 @@ int lcec_nanopd4e_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_reg_t
   if ((err = class_rt_sdo_init(slave, &hal_data->pos_polarity, "pos-polarity" ,0x607E,0x00,1,0)) != 0) {
     return err;
   }
+  if ((err = class_rt_sdo_init(slave, &hal_data->pos_foll_err_window, "pos-following-err-window" ,0x6065,0x00,4,0)) != 0) {
+    return err;
+  }
+  if ((err = class_rt_sdo_init(slave, &hal_data->pos_foll_err_time, "pos-following-err-time" ,0x6066,0x00,2,0)) != 0) {
+    return err;
+  }
+  if ((err = class_rt_sdo_init(slave, &hal_data->pos_foll_err_reaction, "pos-following-err-reaction" ,0x3700,0x00,2,1)) != 0) {
+    return err;
+  }
 
   //velocity
   if ((err = class_rt_sdo_init(slave, &hal_data->velo_accel, "velo-accel" ,0x6048,0x01,4,0)) != 0) {
@@ -393,6 +405,9 @@ void lcec_nanopd4e_check_parameters(lcec_nanopd4e_data_t *hal_data) {
   class_rt_sdo_check(&hal_data->pos_deccel);
   class_rt_sdo_check(&hal_data->pos_option_code);
   class_rt_sdo_check(&hal_data->pos_polarity);
+  class_rt_sdo_check(&hal_data->pos_foll_err_window);
+  class_rt_sdo_check(&hal_data->pos_foll_err_time);
+  class_rt_sdo_check(&hal_data->pos_foll_err_reaction);
 
   class_rt_sdo_check(&hal_data->velo_accel);
   class_rt_sdo_check(&hal_data->velo_deccel);
@@ -489,6 +504,11 @@ void lcec_nanopd4e_read(struct lcec_slave *slave, long period) {
     hal_data->read_error = 0; 
   }
   hal_data->stat_fault_old = *(hal_data->stat_fault);
+  *(hal_data->stat_error_code) = hal_data->error_code.u_parameter;
+
+  if (!hal_data->stat_fault) {
+    hal_data->stat_error_code = 0;
+  }
 
   // read position feedback
   *(hal_data->pos_fb_raw) = EC_READ_S32(&pd[hal_data->curr_pos_pdo_os]);
