@@ -142,7 +142,7 @@ static const lcec_pindesc_t slave_pins[] = {
   { HAL_S32, HAL_OUT, offsetof(lcec_nanopd4e_data_t, pos_cmd_raw), "%s.%s.%s.pos-cmd-raw" },
   { HAL_S32, HAL_OUT, offsetof(lcec_nanopd4e_data_t, pos_fb_raw), "%s.%s.%s.pos-fb-raw" },
   { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, fault), "%s.%s.%s.fault" },
-  { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, fault_reset), "%s.%s.%s.fault-reset" },
+  { HAL_BIT, HAL_IN, offsetof(lcec_nanopd4e_data_t, fault_reset), "%s.%s.%s.fault-reset" },
   { HAL_BIT, HAL_IN, offsetof(lcec_nanopd4e_data_t, enable), "%s.%s.%s.enable" },
   { HAL_BIT, HAL_IO, offsetof(lcec_nanopd4e_data_t, new_setpoint), "%s.%s.%s.new-setpoint" },
   { HAL_BIT, HAL_IN, offsetof(lcec_nanopd4e_data_t, new_setpoint_instant), "%s.%s.%s.new-setpoint-instant" },
@@ -150,6 +150,7 @@ static const lcec_pindesc_t slave_pins[] = {
   { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, stat_switched_on), "%s.%s.%s.stat-switched-on" },
   { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, stat_op_enabled), "%s.%s.%s.stat-op-enabled" },
   { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, stat_fault), "%s.%s.%s.stat-fault" },
+  { HAL_U32, HAL_OUT, offsetof(lcec_nanopd4e_data_t, stat_error_code), "%s.%s.%s.stat-error-code" },
   { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, stat_volt_enabled), "%s.%s.%s.stat-volt-enabled" },
   { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, stat_quick_stop), "%s.%s.%s.stat-quick-stop" },
   { HAL_BIT, HAL_OUT, offsetof(lcec_nanopd4e_data_t, stat_switchon_disabled), "%s.%s.%s.stat-switchon-disabled" },
@@ -506,8 +507,8 @@ void lcec_nanopd4e_read(struct lcec_slave *slave, long period) {
   hal_data->stat_fault_old = *(hal_data->stat_fault);
   *(hal_data->stat_error_code) = hal_data->error_code.u_parameter;
 
-  if (!hal_data->stat_fault) {
-    hal_data->stat_error_code = 0;
+  if (!*(hal_data->stat_fault)) {
+    *(hal_data->stat_error_code) = 0;
   }
 
   // read position feedback
