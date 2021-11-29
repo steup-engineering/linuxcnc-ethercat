@@ -61,9 +61,11 @@ typedef enum {
 typedef enum {
   lcecSlaveTypeInvalid,
   lcecSlaveTypeGeneric,
+  lcecSlaveTypeAX5112,
   lcecSlaveTypeAX5203,
   lcecSlaveTypeAX5206,
   lcecSlaveTypeEK1100,
+  lcecSlaveTypeEK1101,
   lcecSlaveTypeEK1110,
   lcecSlaveTypeEK1122,
   lcecSlaveTypeEL1002,
@@ -102,6 +104,7 @@ typedef enum {
   lcecSlaveTypeEL2612,
   lcecSlaveTypeEL2622,
   lcecSlaveTypeEL2634,
+  lcecSlaveTypeEL2652,
   lcecSlaveTypeEL2808,
   lcecSlaveTypeEL2798,
   lcecSlaveTypeEL2809,
@@ -139,21 +142,29 @@ typedef enum {
   lcecSlaveTypeEL5151,
   lcecSlaveTypeEL5152,
   lcecSlaveTypeEL2521,
+  lcecSlaveTypeEL7031,
+  lcecSlaveTypeEL7041_0052,
   lcecSlaveTypeEL7041_1000,
+  lcecSlaveTypeEL7201_9014,
   lcecSlaveTypeEL7211,
   lcecSlaveTypeEL7221,
   lcecSlaveTypeEL7342,
+  lcecSlaveTypeEL7411,
   lcecSlaveTypeEL9505,
+  lcecSlaveTypeEL9576,
   lcecSlaveTypeEL9508,
   lcecSlaveTypeEL9510,
   lcecSlaveTypeEL9512,
   lcecSlaveTypeEL9515,
   lcecSlaveTypeEL6900,
+  lcecSlaveTypeEL1918_LOGIC,
   lcecSlaveTypeEL1904,
   lcecSlaveTypeEL2904,
+  lcecSlaveTypeAX5805,
   lcecSlaveTypeEM7004,
   lcecSlaveTypeStMDS5k,
   lcecSlaveTypeDeASDA,
+  lcecSlaveTypeDeMS300,
   lcecSlaveTypeOmrG5_KNA5L,
   lcecSlaveTypeOmrG5_KN01L,
   lcecSlaveTypeOmrG5_KN02L,
@@ -288,6 +299,7 @@ typedef union {
   hal_s32_t s32;
   hal_u32_t u32;
   hal_float_t flt;
+  char str[LCEC_CONF_STR_MAXLEN];
 } LCEC_CONF_MODPARAM_VAL_T;
 
 typedef struct {
