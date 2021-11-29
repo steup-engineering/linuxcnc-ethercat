@@ -255,8 +255,8 @@ static const lcec_typelist_t types[] = {
   { lcecSlaveTypeOmrG5_KN150F, LCEC_OMRG5_VID, LCEC_OMRG5_R88D_KN150F_ECT_PID, LCEC_OMRG5_PDOS, 0, NULL, lcec_omrg5_init},
 
   // Nanotec PD4E drive
-  { lcecSlaveTypeNanoPD4E, LCEC_NANOPD4E_VID, LCEC_NANOPD4E_PID, LCEC_NANOPD4E_PDOS, lcec_nanopd4e_init},
-  
+  { lcecSlaveTypeNanoPD4E, LCEC_NANOPD4E_VID, LCEC_NANOPD4E_PID, LCEC_NANOPD4E_PDOS, 0, NULL, lcec_nanopd4e_init},
+
   // modusoft PH3LM2RM converter
   { lcecSlaveTypePh3LM2RM, LCEC_PH3LM2RM_VID, LCEC_PH3LM2RM_PID, LCEC_PH3LM2RM_PDOS, 0, NULL, lcec_ph3lm2rm_init},
 
