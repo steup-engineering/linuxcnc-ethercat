@@ -23,6 +23,7 @@
 
 #define LCEC_AX5_PARAM_ENABLE_FB2  1
 #define LCEC_AX5_PARAM_ENABLE_DIAG 2
+#define LCEC_AX5_PARAM_POS_MODE	3
 
 typedef struct {
   hal_bit_t *enable;
@@ -34,21 +35,26 @@ typedef struct {
   hal_bit_t *drive_off;
 
   hal_float_t *velo_cmd;
+  hal_float_t *pos_cmd;
 
   int fb2_enabled;
   int diag_enabled;
+	int	pos_mode;
 
   hal_u32_t *status;
   hal_float_t *torque_fb_pct;
   hal_u32_t *diag;
+	hal_float_t *following_dist;
 
   unsigned int status_pdo_os;
   unsigned int pos_fb_pdo_os;
   unsigned int pos_fb2_pdo_os;
   unsigned int torque_fb_pdo_os;
+  unsigned int following_dist_pdo_os;
   unsigned int diag_pdo_os;
   unsigned int ctrl_pdo_os;
   unsigned int vel_cmd_pdo_os;
+  unsigned int pos_cmd_pdo_os;
 
   hal_float_t scale;
   hal_float_t scale_fb2;

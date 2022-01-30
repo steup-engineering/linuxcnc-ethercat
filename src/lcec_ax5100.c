@@ -77,11 +77,18 @@ int lcec_ax5100_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_reg_t *
     lcec_syncs_add_sync(&hal_data->syncs, EC_DIR_OUTPUT, EC_WD_DEFAULT);
       lcec_syncs_add_pdo_info(&hal_data->syncs, 0x0018);
         lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0086, 0x01,  16); // control-word
-        lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0018, 0x01,  32); // velo-command
+				if (hal_data->chan.pos_mode) {
+	        lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x002f, 0x01,  32); // pos-command
+				} else {
+	        lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0018, 0x01,  32); // velo-command
+				}
     lcec_syncs_add_sync(&hal_data->syncs, EC_DIR_INPUT, EC_WD_DEFAULT);
       lcec_syncs_add_pdo_info(&hal_data->syncs, 0x0010);
         lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0087, 0x01, 16); // status word
         lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0033, 0x01, 32); // position feedback
+				if (hal_data->chan.pos_mode) {
+	        lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x00bd, 0x01,  32); //following distance
+				}
         lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0054, 0x01, 16); // torque feedback
         if (hal_data->chan.fb2_enabled) {
           lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0035, 0x01, 32); // position feedback 2

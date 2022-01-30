@@ -27,10 +27,21 @@ static const lcec_pindesc_t slave_pins[] = {
   { HAL_BIT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, fault), "%s.%s.%s.%ssrv-fault" },
   { HAL_BIT, HAL_IN, offsetof(lcec_class_ax5_chan_t, halt), "%s.%s.%s.%ssrv-halt" },
   { HAL_BIT, HAL_IN, offsetof(lcec_class_ax5_chan_t, drive_off), "%s.%s.%s.%ssrv-drive-off" },
-  { HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, velo_cmd), "%s.%s.%s.%ssrv-velo-cmd" },
+  //{ HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, velo_cmd), "%s.%s.%s.%ssrv-velo-cmd" },
 
   { HAL_U32, HAL_IN, offsetof(lcec_class_ax5_chan_t, status), "%s.%s.%s.%ssrv-status" },
   { HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, torque_fb_pct), "%s.%s.%s.%ssrv-torque-fb-pct" },
+  { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
+};
+
+static const lcec_pindesc_t slave_pos_pins[] = {
+  { HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, pos_cmd), "%s.%s.%s.%ssrv-pos-cmd" },
+  { HAL_FLOAT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, following_dist), "%s.%s.%s.%ssrv-following_dist" },
+  { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
+};
+
+static const lcec_pindesc_t slave_velo_pins[] = {
+  { HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, velo_cmd), "%s.%s.%s.%ssrv-velo-cmd" },
   { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
 };
 
@@ -73,6 +84,10 @@ int lcec_class_ax5_pdos(struct lcec_slave *slave) {
     pdo_count += 1;
   }
 
+  if (get_param_flag(slave, LCEC_AX5_PARAM_POS_MODE)) {
+    pdo_count += 1;
+  }
+
   return pdo_count;
 }
 
@@ -105,7 +120,7 @@ int lcec_class_ax5_init(struct lcec_slave *slave, ec_pdo_entry_reg_t *pdo_entry_
   LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0033, 0x01 + index, &chan->pos_fb_pdo_os, NULL);
   LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0054, 0x01 + index, &chan->torque_fb_pdo_os, NULL);
   LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0086, 0x01 + index, &chan->ctrl_pdo_os, NULL);
-  LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0018, 0x01 + index, &chan->vel_cmd_pdo_os, NULL);
+  //LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0018, 0x01 + index, &chan->vel_cmd_pdo_os, NULL);
 
   // export pins
   if ((err = lcec_pin_newf_list(chan, slave_pins, LCEC_MODULE_NAME, master->name, slave->name, pfx)) != 0) {
@@ -116,6 +131,23 @@ int lcec_class_ax5_init(struct lcec_slave *slave, ec_pdo_entry_reg_t *pdo_entry_
   if ((err = lcec_param_newf_list(chan, slave_params, LCEC_MODULE_NAME, master->name, slave->name, pfx)) != 0) {
     return err;
   }
+
+	// export pos/velo pins
+  chan->pos_mode = get_param_flag(slave, LCEC_AX5_PARAM_POS_MODE);
+	if (chan->pos_mode) {
+    LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x002f, 0x01 + index, &chan->pos_cmd_pdo_os, NULL);
+		LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x00bd, 0x01 + index, &chan->following_dist_pdo_os, NULL);
+    if ((err = lcec_pin_newf_list(chan, slave_pos_pins, LCEC_MODULE_NAME, master->name, slave->name, pfx)) != 0) {
+      return err;
+    }
+  } else {
+		LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0018, 0x01 + index, &chan->vel_cmd_pdo_os, NULL);
+    if ((err = lcec_pin_newf_list(chan, slave_velo_pins, LCEC_MODULE_NAME, master->name, slave->name, pfx)) != 0) {
+      return err;
+    }
+  }
+
+
 
   // initialie encoder
   rtapi_snprintf(enc_pfx, HAL_NAME_LEN, "%senc", pfx);
@@ -235,7 +267,13 @@ void lcec_class_ax5_read(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan) 
     *(chan->diag) = EC_READ_U32(&pd[chan->diag_pdo_os]);
   }
 
+	// read torque
   *(chan->torque_fb_pct) = ((double) EC_READ_S16(&pd[chan->torque_fb_pdo_os])) * 0.1;
+	// read following distance
+	if (chan->pos_mode) {
+	  *(chan->following_dist) = ((double) EC_READ_S32(&pd[chan->following_dist_pdo_os])) / chan->pos_resolution * chan->scale;
+	}
+
 }
 
 void lcec_class_ax5_write(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan) {
@@ -243,6 +281,7 @@ void lcec_class_ax5_write(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan)
   uint8_t *pd = master->process_data;
   uint16_t ctrl;
   double velo_cmd_raw;
+  double pos_cmd_raw;
 
   // write outputs
   ctrl = 0;
@@ -260,16 +299,27 @@ void lcec_class_ax5_write(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan)
   }
   EC_WRITE_U16(&pd[chan->ctrl_pdo_os], ctrl);
 
-  // set velo command
-  velo_cmd_raw = *(chan->velo_cmd) * chan->scale * chan->vel_output_scale;
-  if (velo_cmd_raw > (double)0x7fffffff) {
-    velo_cmd_raw = (double)0x7fffffff;
-  }
-  if (velo_cmd_raw < (double)-0x7fffffff) {
-    velo_cmd_raw = (double)-0x7fffffff;
-  }
-  EC_WRITE_S32(&pd[chan->vel_cmd_pdo_os], (int32_t)velo_cmd_raw);
-
+	if (chan->pos_mode) {
+		// set pos command
+	  pos_cmd_raw = *(chan->pos_cmd) / chan->scale * chan->pos_resolution; 
+	  if (pos_cmd_raw > (double)0x7fffffff) {
+	    pos_cmd_raw = (double)0x7fffffff;
+	  }
+	  if (pos_cmd_raw < (double)-0x7fffffff) {
+	    pos_cmd_raw = (double)-0x7fffffff;
+	  }
+		EC_WRITE_S32(&pd[chan->pos_cmd_pdo_os], (int32_t)pos_cmd_raw);
+	} else {
+	  // set velo command
+  	velo_cmd_raw = *(chan->velo_cmd) * chan->scale * chan->vel_output_scale;
+  	if (velo_cmd_raw > (double)0x7fffffff) {
+  	  velo_cmd_raw = (double)0x7fffffff;
+  	}
+  	if (velo_cmd_raw < (double)-0x7fffffff) {
+  	  velo_cmd_raw = (double)-0x7fffffff;
+  	}
+  	EC_WRITE_S32(&pd[chan->vel_cmd_pdo_os], (int32_t)velo_cmd_raw);
+	}
   chan->toggle = !chan->toggle;
 }
 
