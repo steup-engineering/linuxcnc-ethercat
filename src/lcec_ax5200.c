@@ -116,7 +116,7 @@ int lcec_ax5200_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_reg_t *
         lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0087, 0x02, 16); // status word
         lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0033, 0x02, 32); // position feedback
 				if (hal_data->chans[1].pos_mode) {
-	        lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x00bd, 0x01,  32); //following distance
+	        lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x00bd, 0x02,  32); //following distance
 				}
         lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0054, 0x02, 16); // torque feedback
         if (hal_data->chans[1].fb2_enabled) {

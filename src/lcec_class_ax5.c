@@ -301,7 +301,7 @@ void lcec_class_ax5_write(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan)
 
 	if (chan->pos_mode) {
 		// set pos command
-	  pos_cmd_raw = *(chan->pos_cmd) / chan->scale * chan->pos_resolution; 
+	  pos_cmd_raw = *(chan->pos_cmd) * chan->scale * chan->pos_resolution; 
 	  if (pos_cmd_raw > (double)0x7fffffff) {
 	    pos_cmd_raw = (double)0x7fffffff;
 	  }
