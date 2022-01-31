@@ -271,7 +271,7 @@ void lcec_class_ax5_read(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan) 
   *(chan->torque_fb_pct) = ((double) EC_READ_S16(&pd[chan->torque_fb_pdo_os])) * 0.1;
 	// read following distance
 	if (chan->pos_mode) {
-	  *(chan->following_dist) = ((double) EC_READ_S32(&pd[chan->following_dist_pdo_os])) / chan->pos_resolution * chan->scale;
+	  *(chan->following_dist) = ((double) EC_READ_S32(&pd[chan->following_dist_pdo_os])) / chan->pos_resolution * chan->scale_rcpt;
 	}
 
 }
@@ -301,7 +301,7 @@ void lcec_class_ax5_write(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan)
 
 	if (chan->pos_mode) {
 		// set pos command
-	  pos_cmd_raw = *(chan->pos_cmd) * chan->scale * chan->pos_resolution; 
+	  pos_cmd_raw = *(chan->pos_cmd) * chan->scale_rcpt * chan->pos_resolution; 
 	  if (pos_cmd_raw > (double)0x7fffffff) {
 	    pos_cmd_raw = (double)0x7fffffff;
 	  }
