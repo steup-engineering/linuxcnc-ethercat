@@ -96,6 +96,9 @@ int lcec_ax5100_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_reg_t *
         if (hal_data->chan.diag_enabled) {
           lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0186, 0x01, 32); // diagnostic number
         }
+        if (hal_data->chan.digital_in_enabled) {
+          lcec_syncs_add_pdo_entry(&hal_data->syncs, 0x0321, 0x01, 16); // digital inputs
+        }
   slave->sync_info = &hal_data->syncs.syncs[0];
 
   return 0;

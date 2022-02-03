@@ -24,7 +24,9 @@
 #define LCEC_AX5_PARAM_ENABLE_FB2  1
 #define LCEC_AX5_PARAM_ENABLE_DIAG 2
 #define LCEC_AX5_PARAM_POS_MODE	3
+#define LCEC_AX5_PARAM_ENABLE_DIGITAL_IN 4
 
+#define LCEC_AX5_DIG_INPUT_COUNT 8
 typedef struct {
   hal_bit_t *enable;
   hal_bit_t *enabled;
@@ -36,10 +38,15 @@ typedef struct {
 
   hal_float_t *velo_cmd;
   hal_float_t *pos_cmd;
+  hal_s32_t *pos_cmd_raw;
+
+	hal_bit_t *dig_in[LCEC_AX5_DIG_INPUT_COUNT];
+	hal_bit_t *dig_in_not[LCEC_AX5_DIG_INPUT_COUNT];
 
   int fb2_enabled;
   int diag_enabled;
 	int	pos_mode;
+	int	digital_in_enabled;
 
   hal_u32_t *status;
   hal_float_t *torque_fb_pct;
@@ -55,6 +62,7 @@ typedef struct {
   unsigned int ctrl_pdo_os;
   unsigned int vel_cmd_pdo_os;
   unsigned int pos_cmd_pdo_os;
+	unsigned int dig_input_pdo_os;
 
   hal_float_t scale;
   hal_float_t scale_fb2;

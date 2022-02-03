@@ -27,7 +27,6 @@ static const lcec_pindesc_t slave_pins[] = {
   { HAL_BIT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, fault), "%s.%s.%s.%ssrv-fault" },
   { HAL_BIT, HAL_IN, offsetof(lcec_class_ax5_chan_t, halt), "%s.%s.%s.%ssrv-halt" },
   { HAL_BIT, HAL_IN, offsetof(lcec_class_ax5_chan_t, drive_off), "%s.%s.%s.%ssrv-drive-off" },
-  //{ HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, velo_cmd), "%s.%s.%s.%ssrv-velo-cmd" },
 
   { HAL_U32, HAL_IN, offsetof(lcec_class_ax5_chan_t, status), "%s.%s.%s.%ssrv-status" },
   { HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, torque_fb_pct), "%s.%s.%s.%ssrv-torque-fb-pct" },
@@ -37,6 +36,7 @@ static const lcec_pindesc_t slave_pins[] = {
 static const lcec_pindesc_t slave_pos_pins[] = {
   { HAL_FLOAT, HAL_IN, offsetof(lcec_class_ax5_chan_t, pos_cmd), "%s.%s.%s.%ssrv-pos-cmd" },
   { HAL_FLOAT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, following_dist), "%s.%s.%s.%ssrv-following_dist" },
+  { HAL_S32, HAL_OUT, offsetof(lcec_class_ax5_chan_t, pos_cmd_raw), "%s.%s.%s.%ssrv-pos-cmd-raw" },
   { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
 };
 
@@ -47,6 +47,12 @@ static const lcec_pindesc_t slave_velo_pins[] = {
 
 static const lcec_pindesc_t slave_diag_pins[] = {
   { HAL_U32, HAL_IN, offsetof(lcec_class_ax5_chan_t, diag), "%s.%s.%s.%ssrv-diag" },
+  { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
+};
+
+static const lcec_pindesc_t slave_dig_input_pins[] = {
+  { HAL_BIT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, dig_in), "%s.%s.%s.%ssrv-dig-in-%d" },
+  { HAL_BIT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, dig_in), "%s.%s.%s.%ssrv-dig-in-%d-not" },
   { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
 };
 
@@ -88,12 +94,16 @@ int lcec_class_ax5_pdos(struct lcec_slave *slave) {
     pdo_count += 1;
   }
 
+  if (get_param_flag(slave, LCEC_AX5_PARAM_ENABLE_DIGITAL_IN)) {
+    pdo_count += 1;
+  }
+
   return pdo_count;
 }
 
 int lcec_class_ax5_init(struct lcec_slave *slave, ec_pdo_entry_reg_t *pdo_entry_regs, lcec_class_ax5_chan_t *chan, int index, const char *pfx) {
   lcec_master_t *master = slave->master;
-  int err;
+  int i, err;
   uint8_t idn_buf[4];
   uint32_t idn_pos_resolution;
   uint16_t idn_vel_scale;
@@ -120,7 +130,6 @@ int lcec_class_ax5_init(struct lcec_slave *slave, ec_pdo_entry_reg_t *pdo_entry_
   LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0033, 0x01 + index, &chan->pos_fb_pdo_os, NULL);
   LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0054, 0x01 + index, &chan->torque_fb_pdo_os, NULL);
   LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0086, 0x01 + index, &chan->ctrl_pdo_os, NULL);
-  //LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0018, 0x01 + index, &chan->vel_cmd_pdo_os, NULL);
 
   // export pins
   if ((err = lcec_pin_newf_list(chan, slave_pins, LCEC_MODULE_NAME, master->name, slave->name, pfx)) != 0) {
@@ -155,6 +164,7 @@ int lcec_class_ax5_init(struct lcec_slave *slave, ec_pdo_entry_reg_t *pdo_entry_
     return err;
   }
 
+  // export fb2 pins 
   chan->fb2_enabled = get_param_flag(slave, LCEC_AX5_PARAM_ENABLE_FB2);
   if (chan->fb2_enabled) {
     LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0035, 0x01 + index, &chan->pos_fb2_pdo_os, NULL);
@@ -168,11 +178,24 @@ int lcec_class_ax5_init(struct lcec_slave *slave, ec_pdo_entry_reg_t *pdo_entry_
     }
   }
 
+  //export diag pins
   chan->diag_enabled = get_param_flag(slave, LCEC_AX5_PARAM_ENABLE_DIAG);
   if (chan->diag_enabled) {
-    LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0186, 0x01 + index, &chan->diag_pdo_os, NULL);
+    LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0321, 0x01 + index, &chan->dig_input_pdo_os, NULL);
     if ((err = lcec_pin_newf_list(chan, slave_diag_pins, LCEC_MODULE_NAME, master->name, slave->name, pfx)) != 0) {
       return err;
+    }
+  }
+
+  //export digital in pins
+  chan->digital_in_enabled = get_param_flag(slave, LCEC_AX5_PARAM_ENABLE_DIGITAL_IN);
+  if (chan->digital_in_enabled) {
+    LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0x0186, 0x01 + index, &chan->diag_pdo_os, NULL);
+//    for (i = 0, in = hal_data->dig_in; i < LCEC_AX5_DIG_INPUT_COUNT; i++, in++) {
+    for (i = 0; i < LCEC_AX5_DIG_INPUT_COUNT; i++) {
+      if ((err = lcec_pin_newf_list(chan, slave_dig_input_pins, LCEC_MODULE_NAME, master->name, slave->name, pfx)) != 0) {
+        return err;
+      }
     }
   }
 
@@ -223,6 +246,8 @@ void lcec_class_ax5_read(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan) 
   lcec_master_t *master = slave->master;
   uint8_t *pd = master->process_data;
   uint32_t pos_cnt;
+  uint16_t dig_ins;
+  int i;
 
   // wait for slave to be operational
   if (!slave->state.operational) {
@@ -273,7 +298,14 @@ void lcec_class_ax5_read(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan) 
 	if (chan->pos_mode) {
 	  *(chan->following_dist) = ((double) EC_READ_S32(&pd[chan->following_dist_pdo_os])) / chan->pos_resolution * chan->scale_rcpt;
 	}
-
+  // read digital inputs
+  if (chan->digital_in_enabled) {
+    dig_ins = EC_READ_U16(&pd[chan->dig_input_pdo_os]);
+    for (i= 0; i < LCEC_AX5_DIG_INPUT_COUNT; i++) {
+      *(chan->dig_in[i]) = (dig_ins >> i ) && 1 ==1;
+      *(chan->dig_in_not[i]) = *(chan->dig_in[i]);
+    }
+  } 
 }
 
 void lcec_class_ax5_write(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan) {
@@ -309,6 +341,7 @@ void lcec_class_ax5_write(struct lcec_slave *slave, lcec_class_ax5_chan_t *chan)
 	    pos_cmd_raw = (double)-0x7fffffff;
 	  }
 		EC_WRITE_S32(&pd[chan->pos_cmd_pdo_os], (int32_t)pos_cmd_raw);
+    *(chan->pos_cmd_raw) = (int32_t)pos_cmd_raw;
 	} else {
 	  // set velo command
   	velo_cmd_raw = *(chan->velo_cmd) * chan->scale * chan->vel_output_scale;
