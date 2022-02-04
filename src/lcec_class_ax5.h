@@ -46,9 +46,9 @@ typedef struct {
   hal_float_t *pos_cmd;
   hal_s32_t *pos_cmd_raw;
 
-//	lcec_class_ax5_input_t dig_inputs[LCEC_AX5_DIG_INPUT_COUNT];
-  hal_bit_t *dig_in[LCEC_AX5_DIG_INPUT_COUNT];
-  hal_bit_t *dig_in_not[LCEC_AX5_DIG_INPUT_COUNT];
+	lcec_class_ax5_input_t dig_inputs[LCEC_AX5_DIG_INPUT_COUNT];
+//  hal_bit_t *dig_in[LCEC_AX5_DIG_INPUT_COUNT];
+//  hal_bit_t *dig_in_not[LCEC_AX5_DIG_INPUT_COUNT];
 
   int fb2_enabled;
   int diag_enabled;
