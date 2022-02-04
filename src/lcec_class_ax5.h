@@ -27,6 +27,12 @@
 #define LCEC_AX5_PARAM_ENABLE_DIGITAL_IN 4
 
 #define LCEC_AX5_DIG_INPUT_COUNT 8
+
+typedef struct {
+  hal_bit_t *dig_in;
+  hal_bit_t *dig_in_not;
+} lcec_class_ax5_input_t;
+
 typedef struct {
   hal_bit_t *enable;
   hal_bit_t *enabled;
@@ -40,8 +46,9 @@ typedef struct {
   hal_float_t *pos_cmd;
   hal_s32_t *pos_cmd_raw;
 
-	hal_bit_t *dig_in[LCEC_AX5_DIG_INPUT_COUNT];
-	hal_bit_t *dig_in_not[LCEC_AX5_DIG_INPUT_COUNT];
+//	lcec_class_ax5_input_t dig_inputs[LCEC_AX5_DIG_INPUT_COUNT];
+  hal_bit_t *dig_in[LCEC_AX5_DIG_INPUT_COUNT];
+  hal_bit_t *dig_in_not[LCEC_AX5_DIG_INPUT_COUNT];
 
   int fb2_enabled;
   int diag_enabled;
