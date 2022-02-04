@@ -52,7 +52,7 @@ static const lcec_pindesc_t slave_diag_pins[] = {
 
 static const lcec_pindesc_t slave_dig_input_pins[] = {
   { HAL_BIT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, dig_in), "%s.%s.%s.%ssrv-dig-in-%d" },
-  { HAL_BIT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, dig_in), "%s.%s.%s.%ssrv-dig-in-%d-not" },
+  { HAL_BIT, HAL_OUT, offsetof(lcec_class_ax5_chan_t, dig_in_not), "%s.%s.%s.%ssrv-dig-in-%d-not" },
   { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
 };
 
