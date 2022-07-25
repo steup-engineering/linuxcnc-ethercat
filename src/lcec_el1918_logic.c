@@ -45,8 +45,6 @@ typedef struct {
 } lcec_el1918_logic_fsoe_t;
 
 typedef struct {
-
-  lcec_el1918_logic_fsoe_t *fsoe;
   int fsoe_count;
 
   hal_u32_t *state;
@@ -63,6 +61,8 @@ typedef struct {
   unsigned int state_os;
   unsigned int cycle_counter_os;
 
+  // must be last entry (dynamic size)
+  lcec_el1918_logic_fsoe_t fsoe[];
 } lcec_el1918_logic_data_t;
 
 static const lcec_pindesc_t slave_pins[] = {
@@ -150,7 +150,6 @@ int lcec_el1918_logic_preinit(struct lcec_slave *slave) {
           return -EINVAL;
         }
 
-        (slave->pdo_entry_count)++;
         break;
 
       case LCEC_EL1918_LOGIC_PARAM_STDOUT_NAME:
@@ -160,9 +159,15 @@ int lcec_el1918_logic_preinit(struct lcec_slave *slave) {
           return -EINVAL;
         }
 
-        (slave->pdo_entry_count)++;
         break;
     }
+  }
+
+  if (stdin_count > 0) {
+    slave->pdo_entry_count += LCEC_EL1918_LOGIC_STDIN_PDOS;
+  }
+  if (stdout_count > 0) {
+    slave->pdo_entry_count += LCEC_EL1918_LOGIC_STDOUT_PDOS;
   }
 
   return 0;
@@ -195,11 +200,8 @@ int lcec_el1918_logic_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_r
     return -EIO;
   }
   memset(hal_data, 0, sizeof(lcec_el1918_logic_data_t));
-  slave->hal_data = hal_data;
-
-  // setup fsoe pointer
-  hal_data->fsoe = (lcec_el1918_logic_fsoe_t *) &hal_data[1];
   hal_data->fsoe_count = fsoe_idx;
+  slave->hal_data = hal_data;
 
   // initialize POD entries
   LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0xf100, 0x01, &hal_data->state_os, NULL);
@@ -217,7 +219,6 @@ int lcec_el1918_logic_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_r
   }
   if (hal_data->std_in_count > 0) {
     LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0xf788, 0x00, &hal_data->std_in_os, NULL);
-    pdo_entry_regs += hal_data->std_in_count;
   }
 
   hal_data->std_out_count = export_std_pins(slave, pdo_entry_regs, LCEC_EL1918_LOGIC_PARAM_STDOUT_NAME, hal_data->std_out_pins, HAL_OUT);
@@ -226,7 +227,6 @@ int lcec_el1918_logic_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_r
   }
   if (hal_data->std_out_count > 0) {
     LCEC_PDO_INIT(pdo_entry_regs, slave->index, slave->vid, slave->pid, 0xf688, 0x00, &hal_data->std_out_os, NULL);
-    pdo_entry_regs += hal_data->std_out_count;
   }
 
   // map and export fsoe slave data
